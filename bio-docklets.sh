@@ -339,15 +339,6 @@ if [ "$pipeline_option" = "1" ] || [ "$pipeline_option" = "2" ]; then
 		fi
 		if [[ $gsize =~ [0-9]+$ ]]; then break; else continue; fi
 	done
-	while true; do
-		printf "* Please enter a value for MFOLD upper limit (default: 15)"
-		read -r -p ": " mfold
-		if [ "$mfold" = "" ]; then
-			mfold=15
-			echo "[INFO] - Set default value ($mfold)"
-			break
-		elif [[ $mfold =~ [0-9]+$ ]]; then break; else continue; fi
-	done
 fi
 
 if [ "$pipeline_option" = "3" ]; then
@@ -828,10 +819,9 @@ if [ "$auto_launch_pipeline" = "Y" ] || [ "$auto_launch_pipeline" = "y" ]; then
 	fi
 	if [ "$pipeline_option" = "1" ] || [ "$pipeline_option" = "2" ]; then
 		printf "** Running ChIP-Seq pipeline **\n"
-		python $BCIL_data_path/launch-pipelines.py $BCIL_data_path $pipeline_name $pipeline_port $insert_size $pvalue $gsize $mfold
+		python $BCIL_data_path/launch-pipelines.py $BCIL_data_path $pipeline_name $pipeline_port $insert_size $pvalue $gsize
 	elif [ "$pipeline_option" = "3" ]; then
 		printf "** Running RNA-Seq pipeline **\n"
-		#printf "\n* Insert Size: %s\n* Anchor Length: %s\n* Segment Length: %s\n" "$insert_size" "$anchor_length" "$segment_length"
 		python $BCIL_data_path/launch-pipelines.py $BCIL_data_path $pipeline_name $pipeline_port $insert_size $anchor_length $segment_length
 	else
 		python $BCIL_data_path/launch-pipelines.py $BCIL_data_path $pipeline_name $pipeline_port
