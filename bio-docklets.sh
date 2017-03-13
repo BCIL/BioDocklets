@@ -93,59 +93,7 @@ BCIL_data_path_input="$BCIL_data_path/input"
 BCIL_data_path_output="$BCIL_data_path/output"
 input_in_default_location=false
 
-while true; do
-	printf "** Default database (houses all relevant datasets (inputs, outputs, etc)) path location: '%s' \n    Would you like to set this location as the default database path? " "$BCIL_data_path"
-	read -r -p "[Y/N]: " default_loc_yn
-	if [ "$default_loc_yn" = "Y" ] || [ "$default_loc_yn" = "y" ] || [ "$default_loc_yn" = "N" ] || [ "$default_loc_yn" = "n" ]; then
-		break
-	fi
-done
-if [ "$default_loc_yn" = "N" ] || [ "$default_loc_yn" = "n" ]; then
-	while true; do
-		read -r -p "** Please provide the path to your database (houses all relevant datasets (inputs,outputs etc)) location: " new_database_loc
-		if [ "$(echo -n $new_database_loc | tail -c 1)" = '/' ]; then
-			new_database_loc=$(echo "${new_database_loc%?}")
-		fi
-		if [ ! -d $new_database_loc ]; then
-			while true; do
-				read -r -p "** The location to your database (houses all relevant datasets (inputs,outputs etc)) path does not exist, would you like to create one? [Y/N]: " new_database_gen_yn
-				if [ "$new_database_gen_yn" = "Y" ] || [ "$new_database_gen_yn" = "y" ] || [ "$new_database_gen_yn" = "N" ] || [ "$new_database_gen_yn" = "n" ]; then
-					break
-				fi
-			done
-			if [ "$new_database_gen_yn" = "Y" ] || [ "$new_database_gen_yn" = "y" ]; then
-				BCIL_data_path="$new_database_loc"
-				BCIL_data_path_input="$new_database_loc/input"
-				BCIL_data_path_output="$new_database_loc/output"
-				echo "** Generating data folder ($BCIL_data_path)"
-				res=$(mkdir -p $BCIL_data_path_input $BCIL_data_path_output 2>&1)
-				if [ ! "$res" = "" ]; then
-					printf "'%s'\n\n" "$res"
-					continue
-				else
-					break
-				fi
-			else
-				continue
-			fi
-		else
-			### set new database path
-			BCIL_data_path="$new_database_loc"
-			BCIL_data_path_input="$new_database_loc/input"
-			BCIL_data_path_output="$new_database_loc/output"
-			break
-		fi
-	done
-
-else
-	if [ ! -d $BCIL_data_path ]; then
-		echo "** Generating data folder ($BCIL_data_path)" 
-		mkdir -p $BCIL_data_path $BCIL_data_path_input $BCIL_data_path_output 
-	fi
-fi
-
-printf "** Working PATH: '%s'\n\n" "$BCIL_data_path"
-printf "*************************************\n* 1. ChIP-Seq - Single-End \n* 2. ChIP-Seq - Paired-End \n* 3. RNA-Seq - Tophat_2 (Bowtie_2) \n*************************************\n"
+printf "*************************************\n* 1. ChIP-Seq - Single-End \n* 2. ChIP-Seq - Paired-End \n* 3. RNA-Seq - Paired-End \n*************************************\n"
 while true; do
 	read -r -p "* Select [1-3]: " pipeline_option
 	if [ "$pipeline_option" = "1" ] || [ "$pipeline_option" = "2" ] || [ "$pipeline_option" = "3" ]; then
@@ -164,6 +112,85 @@ else
 	echo "** ERROR - Something went wrong while trying to retreive the pipeline!! Please rerun this script from the start."
 	exit 1
 fi
+
+while true; do
+	printf "** Default database (houses all relevant datasets (inputs, outputs, etc)) path location: '%s' \n   Would you like to set this location as the default database path? " "$BCIL_data_path"
+	read -r -p "[Y/N]: " default_loc_yn
+	if [ "$default_loc_yn" = "Y" ] || [ "$default_loc_yn" = "y" ] || [ "$default_loc_yn" = "N" ] || [ "$default_loc_yn" = "n" ]; then
+		break
+	fi
+done
+if [ "$default_loc_yn" = "N" ] || [ "$default_loc_yn" = "n" ]; then
+	while true; do
+		read -r -p "** Please provide your input path: " new_database_loc
+		if [ "$(echo -n $new_database_loc | tail -c 1)" = '/' ]; then
+			new_database_loc=$(echo "${new_database_loc%?}")
+		fi
+		if [ ! -d $new_database_loc ]; then
+			while true; do
+				read -r -p "** The location to your database path does not exist, would you like to re-try to provide correct one? otherwise this script will be aborted. [Y(re-type)/N(exit)]: " retype_data_path_yn
+				if [ "$retype_data_path_yn" = "Y" ] || [ "$retype_data_path_yn" = "y" ] || [ "$retype_data_path_yn" = "N" ] || [ "$retype_data_path_yn" = "n" ]; then
+					break
+				fi
+			done
+			if [ "$retype_data_path_yn" = "Y" ] || [ "$retype_data_path_yn" = "y" ]; then
+				continue
+			else
+				printf "** You selected exit this script. Please make sure your input data path then re-run this script.\n\n"
+				exit 0
+			fi
+		else
+			### set new database path
+			BCIL_data_path="$new_database_loc"
+			BCIL_data_path_input="$new_database_loc/input"
+			BCIL_data_path_output="$new_database_loc/output"
+			echo "** Generating database folder template.."
+			if [ "$pipeline_option" = "1" ] || [ "$pipeline_option" = "2" ]; then
+				chk_input_file_num=$(ls $BCIL_data_path/*.fastq $BCIL_data_path/*.fq | wc -l)
+				if [ "$pipeline_option" = "1" ] && [ "$chk_input_file_num" != "1" ]; then
+					printf "\n[WARN] - $pipeline_name required 1 fastq file but your path contains more than 1 input files\n\n"
+					file_list=$(ls $BCIL_data_path/*.fastq $BCIL_data_path/*.fq)
+					continue
+				elif [ "$pipeline_option" = "2" ] && [ "$chk_input_file_num" != "2" ]; then
+					printf "\n[WARN] - $pipeline_name required 2 fastq files but your path contains more or less than 2 fastq files\n\n"
+					file_list=$(ls $BCIL_data_path/*.fastq $BCIL_data_path/*.fq)
+					continue
+				fi
+				BCIL_data_path_input_data=$BCIL_data_path_input/CHIPseq
+				if [ -d $BCIL_data_path_input_data ] && (( $(ls $BCIL_data_path_input_data | wc -l) > 0 )); then
+					mv $BCIL_data_path_input_data $BCIL_data_path_input_data_backup_$(date +"%Y-%m-%d_%T")
+				fi 
+			elif [ "$pipeline_option" = "3" ]; then
+				chk_input_file_num=$(ls $BCIL_data_path/*.fastq $BCIL_data_path/*.fq | wc -l)
+				if [ "$pipeline_option" = "3" ] && [ "$chk_input_file_num" != "4" ]; then
+					printf "\n[WARN] - $pipeline_name required 4 fastq files but your path contains more or less than 4 fastq files\n\n"
+					file_list=$(ls $BCIL_data_path)
+					continue
+				fi
+				BCIL_data_path_input_data=$BCIL_data_path_input/RNAseq 
+				if [ -d $BCIL_data_path_input_data ] && (( $(ls $BCIL_data_path_input_data | wc -l) > 0 )); then
+					mv $BCIL_data_path_input_data $BCIL_data_path_input_data_backup_$(date +"%Y-%m-%d_%T")
+				fi
+			fi
+			mkdir -p $BCIL_data_path_input $BCIL_data_path_output $BCIL_data_path_input_data 2>&1
+			mv $BCIL_data_path/*.fq $BCIL_data_path_input_data 2>/dev/null
+			mv $BCIL_data_path/*.fastq $BCIL_data_path_input_data 2>/dev/null
+			mv $BCIL_data_path/*.gtf $BCIL_data_path_input_data 2>/dev/null
+			if (( $(ls $BCIL_data_path_input_data | wc -l) < 1 )); then
+				printf "\n**************************************************\n** [ERROR] - Input file does not exist! ($BCIL_data_path_input_data)\n**************************************************\n\n"
+				continue
+			fi
+			break
+		fi
+	done
+else
+	if [ ! -d $BCIL_data_path ]; then
+		echo "** Generating data folder ($BCIL_data_path)" 
+		mkdir -p $BCIL_data_path $BCIL_data_path_input $BCIL_data_path_output 
+	fi
+fi
+
+printf "\n** [INFO] - Working PATH: '%s'\n\n" "$BCIL_data_path"
 
 if [ "$pipeline_option" = "1" ] || [ "$pipeline_option" = "2" ]; then
 	printf "\t** ChIP-Seq **\n"
@@ -189,7 +216,7 @@ if [ "$pipeline_option" = "1" ] || [ "$pipeline_option" = "2" ]; then
 				printf "== Your input folder is empty!\n\n"
 				continue
 			else
-				c="$(ls -l $ChIPSeq_user_input_path | grep '.fastq' |  wc -l)"
+				c="$(ls -l $ChIPSeq_user_input_path/*.fastq $ChIPSeq_user_input_path/*.fq | wc -l)"
 				if ([ "$pipeline_option" = "1" ] && [ "$(echo $c)" = "1" ]) || ([ "$pipeline_option" = "2" ] && [ "$(echo $c)" = "2" ]); then
 					ChIPSeq_input_path="$ChIPSeq_user_input_path"
 					allow_to_autorun_pipelines="true"
@@ -223,7 +250,7 @@ if [ "$pipeline_option" = "1" ] || [ "$pipeline_option" = "2" ]; then
 					printf "== Your input path ($BCIL_data_path_input/CHIPseq) does not exist!\n\n"
 					continue
 				else
-					c="$(ls -l $input_data_should_be_in | grep '.fastq' |  wc -l)"
+					c="$(ls $input_data_should_be_in/*.fastq $input_data_should_be_in/*.fq  |  wc -l)"
 					if ([ "$pipeline_option" = "1" ] && [ "$(echo $c)" = "1" ]) || ([ "$pipeline_option" = "2" ] && [ "$(echo $c)" = "2" ]); then
 						ChIPSeq_input_path="$BCIL_data_path_input/CHIPseq"
 						input_in_default_location=true
@@ -310,18 +337,23 @@ if [ "$pipeline_option" = "1" ] || [ "$pipeline_option" = "2" ]; then
 		break	
 	done
 
-	printf "\n***** Please provide the values for the following tool parameters of the Bowtie2 and MACS2 tools *****\n"
+	if [ "$pipeline_option" = "2" ]; then
+		printf "\n***** Please provide the values for the following tool parameters of the Bowtie2 and MACS2 tools *****\n"
+		while true; do
+			printf "* Please enter an Insert Size (default: 200)"
+			read -r -p ": " insert_size
+			if [ "$insert_size" = "" ]; then
+				insert_size=200
+				echo "[INFO] - Set default value ($insert_size)"
+				break
+			elif [[ $insert_size =~ [0-9]+$ ]]; then break; else continue; fi
+		done
+	else
+		printf "\n***** Please provide the values for the following tool parameters of the MACS2 tools *****\n"
+		insert_size=200
+	fi
 	while true; do
-		printf "* Please enter an Insert Size (default: 200):"
-		read -r -p ": " insert_size
-		if [ "$insert_size" = "" ]; then
-			insert_size=200
-			echo "[INFO] - Set default value ($insert_size)"
-			break
-		elif [[ $insert_size =~ [0-9]+$ ]]; then break; else continue; fi
-	done
-	while true; do
-		printf "* Please provide a P-Value cutoff (default: 0.01):"
+		printf "* Please provide a P-Value cutoff (default: 0.01)"
 		read -r -p ": " pvalue
 		if [ "$pvalue" = "" ]; then
 			pvalue=0.01
@@ -330,7 +362,7 @@ if [ "$pipeline_option" = "1" ] || [ "$pipeline_option" = "2" ]; then
 		elif [[ $pvalue < 1 ]]; then break; else continue; fi
 	done
 	while true; do
-		printf "* Please enter the genome size of your organism of study (default: 2700000000):"
+		printf "* Please enter the genome size of your organism of study (default: 2700000000)"
 		read -r -p ": " gsize
 		if [ "$gsize" = "" ]; then
 			gsize=2700000000
@@ -495,6 +527,7 @@ done
 
 #Deprecated pipeline using bowtie 1.
 bowtie_ver="2"
+bowtie_path="$HOME/bowtie"$bowtie_ver	
 
 if [ "$ref_yn" = "Y" ] || [ "$ref_yn" = "y" ]; then
 	while true; do
@@ -714,7 +747,7 @@ if [ "$use_built_in_ref_yn" = "Y" ] || [ "$use_built_in_ref_yn" = "y" ];then
 		wget -r -R index.html -N -nd -np http://146.95.173.35:9988/hg38/Sequence/Bowtie_2/ -P "$BCIL_data_path_input/hg38" --progress=bar:force 2>&1 | tail -f -n +6
 	fi
 else	# user own reference
-	DATE=`date +%Y-%m-%d:%H:%M:%S`
+	DATE=$(date +%Y-%m-%d_%T)
 	if [ "$user_indices_yn" = "Y" ] || [ "$user_indices_yn" = "y" ]; then
 		echo "** Copying your reference files..."
 		
@@ -746,18 +779,18 @@ else	# user own reference
 		printf "** Installing Bowtie_$bowtie_ver...\n"
 		if [ "$bowtie_ver" = "1" ]; then
 			if [ "$(which bowtie)" = '' ]; then
-				if [ "$(ls /home/bowtie)" = '' ]; then
-					mkdir -p /home/bowtie
-					wget -N -O /home/bowtie/bowtie-1.1.2-linux-x86_64.zip https://sourceforge.net/projects/bowtie-bio/files/bowtie/1.1.2/bowtie-1.1.2-linux-x86_64.zip/download --progress=bar:force 2>&1 | tail -f -n +6
-					unzip -j /home/bowtie/\*.zip -d /home/bowtie 
+				if [ "$(ls $bowtie_path)" = '' ]; then
+					mkdir -p $bowtie_path
+					wget -N -O $bowtie_path/bowtie-1.1.2-linux-x86_64.zip https://sourceforge.net/projects/bowtie-bio/files/bowtie/1.1.2/bowtie-1.1.2-linux-x86_64.zip/download --progress=bar:force 2>&1 | tail -f -n +6
+					unzip -j $bowtie_path/\*.zip -d $bowtie_path 
 				fi
 			fi
 		elif [ "$bowtie_ver" = "2" ]; then
 			if [ "$(which bowtie2)" = '' ]; then
-				if [ "$(ls /home/bowtie2)" = '' ]; then
-					mkdir -p /home/bowtie2
-					wget -N -O /home/bowtie2/bowtie2-2.2.7-linux-x86_64.zip https://sourceforge.net/projects/bowtie-bio/files/bowtie2/2.2.7/bowtie2-2.2.7-linux-x86_64.zip/download --progress=bar:force 2>&1 | tail -f -n +6
-					unzip -j /home/bowtie2/\*.zip -d /home/bowtie2
+				if [ "$(ls $bowtie_path)" = '' ]; then
+					mkdir -p $bowtie_path
+					wget -N -O $bowtie_path/bowtie2-2.2.7-linux-x86_64.zip https://sourceforge.net/projects/bowtie-bio/files/bowtie2/2.2.7/bowtie2-2.2.7-linux-x86_64.zip/download --progress=bar:force 2>&1 | tail -f -n +6
+					unzip -j $bowtie_path/\*.zip -d $bowtie_path
 				fi
 			fi 
 		fi
@@ -773,12 +806,12 @@ else	# user own reference
 			mkdir -p $bowtie_1_path
 			cp $ref_path_user $bowtie_1_path
 			ref_file_path=$(echo $bowtie_1_path/$ref_fname)
-			cd "$bowtie_1_path" && /home/bowtie/bowtie-build $ref_file_path $bowtie_prefix
+			cd "$bowtie_1_path" && $bowtie_path/bowtie-build $ref_file_path $bowtie_prefix
 		else
 			mkdir -p $bowtie_2_path
 			cp $ref_path_user $bowtie_2_path
 			ref_file_path=$(echo $bowtie_2_path/$ref_fname)
-			cd "$bowtie_2_path" && /home/bowtie2/bowtie2-build $ref_file_path $bowtie_prefix
+			cd "$bowtie_2_path" && $bowtie_path/bowtie2-build $ref_file_path $bowtie_prefix
 		fi
 	fi
 fi
