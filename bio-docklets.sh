@@ -146,14 +146,14 @@ if [ "$default_loc_yn" = "N" ] || [ "$default_loc_yn" = "n" ]; then
 			BCIL_data_path_output="$new_database_loc/output"
 			echo "** Generating database folder template.."
 			if [ "$pipeline_option" = "1" ] || [ "$pipeline_option" = "2" ]; then
-				chk_input_file_num=$(ls $BCIL_data_path/*.fastq $BCIL_data_path/*.fq | wc -l)
+				chk_input_file_num=$(ls $BCIL_data_path/*.fastq $BCIL_data_path/*.fq 2>/dev/null | wc -l)
 				if [ "$pipeline_option" = "1" ] && [ "$chk_input_file_num" != "1" ]; then
 					printf "\n[WARN] - $pipeline_name required 1 fastq file but your path contains more than 1 input files\n\n"
-					file_list=$(ls $BCIL_data_path/*.fastq $BCIL_data_path/*.fq)
+					file_list=$(ls $BCIL_data_path/*.fastq $BCIL_data_path/*.fq 2>/dev/null )
 					continue
 				elif [ "$pipeline_option" = "2" ] && [ "$chk_input_file_num" != "2" ]; then
 					printf "\n[WARN] - $pipeline_name required 2 fastq files but your path contains more or less than 2 fastq files\n\n"
-					file_list=$(ls $BCIL_data_path/*.fastq $BCIL_data_path/*.fq)
+					file_list=$(ls $BCIL_data_path/*.fastq $BCIL_data_path/*.fq 2>/dev/null )
 					continue
 				fi
 				BCIL_data_path_input_data=$BCIL_data_path_input/CHIPseq
@@ -161,7 +161,7 @@ if [ "$default_loc_yn" = "N" ] || [ "$default_loc_yn" = "n" ]; then
 					mv $BCIL_data_path_input_data $BCIL_data_path_input_data_backup_$(date +"%Y-%m-%d_%T")
 				fi 
 			elif [ "$pipeline_option" = "3" ]; then
-				chk_input_file_num=$(ls $BCIL_data_path/*.fastq $BCIL_data_path/*.fq | wc -l)
+				chk_input_file_num=$(ls $BCIL_data_path/*.fastq $BCIL_data_path/*.fq 2>/dev/null | wc -l)
 				if [ "$pipeline_option" = "3" ] && [ "$chk_input_file_num" != "4" ]; then
 					printf "\n[WARN] - $pipeline_name required 4 fastq files but your path contains more or less than 4 fastq files\n\n"
 					file_list=$(ls $BCIL_data_path)
@@ -216,7 +216,7 @@ if [ "$pipeline_option" = "1" ] || [ "$pipeline_option" = "2" ]; then
 				printf "== Your input folder is empty!\n\n"
 				continue
 			else
-				c="$(ls -l $ChIPSeq_user_input_path/*.fastq $ChIPSeq_user_input_path/*.fq | wc -l)"
+				c="$(ls -l $ChIPSeq_user_input_path/*.fastq $ChIPSeq_user_input_path/*.fq 2>/dev/null | wc -l)"
 				if ([ "$pipeline_option" = "1" ] && [ "$(echo $c)" = "1" ]) || ([ "$pipeline_option" = "2" ] && [ "$(echo $c)" = "2" ]); then
 					ChIPSeq_input_path="$ChIPSeq_user_input_path"
 					allow_to_autorun_pipelines="true"
@@ -250,7 +250,7 @@ if [ "$pipeline_option" = "1" ] || [ "$pipeline_option" = "2" ]; then
 					printf "== Your input path ($BCIL_data_path_input/CHIPseq) does not exist!\n\n"
 					continue
 				else
-					c="$(ls $input_data_should_be_in/*.fastq $input_data_should_be_in/*.fq  |  wc -l)"
+					c="$(ls $input_data_should_be_in/*.fastq $input_data_should_be_in/*.fq 2>/dev/null |  wc -l)"
 					if ([ "$pipeline_option" = "1" ] && [ "$(echo $c)" = "1" ]) || ([ "$pipeline_option" = "2" ] && [ "$(echo $c)" = "2" ]); then
 						ChIPSeq_input_path="$BCIL_data_path_input/CHIPseq"
 						input_in_default_location=true
