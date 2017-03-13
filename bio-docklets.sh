@@ -817,14 +817,14 @@ else	# user own reference
 fi
 
 if [ "$pipeline_option" = "1" ]; then
-	pipeline_name="ChIPsequser_latest"
-	repo_pipeline="bcil/pipelines:$pipeline_name"
+	pipeline_name="ChIPseq_single"
+	repo_pipeline="bcil/biodocklets:$pipeline_name"
 elif [ "$pipeline_option" = "2" ]; then
-	pipeline_name="ChIPsequser_paired_latest"
-	repo_pipeline="bcil/pipelines:$pipeline_name"
+	pipeline_name="ChIPseq_paired"
+	repo_pipeline="bcil/biodocklets:$pipeline_name"
 elif [ "$pipeline_option" = "3" ]; then
-	pipeline_name="RNAsequser_tophat2_latest"
-	repo_pipeline="bcil/pipelines:$pipeline_name"
+	pipeline_name="RNAseq_paired"
+	repo_pipeline="bcil/biodocklets:$pipeline_name"
 else
 	echo "** [ERROR] - Something went wrong while trying to retreive the pipeline!!"
 	exit 1
