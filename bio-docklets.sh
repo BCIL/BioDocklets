@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # author: "Baekdoo Kim (baegi7942@gmail.com)"
 
 printf "\n\t *****************************************************************************************************************\n\t ** \t Welcome to Bio-Docklets: Virtualization Containers for Single-Step Execution of NGS Data Pipelines.\t**\n\t *****************************************************************************************************************\n\n"
@@ -29,7 +29,7 @@ if $sudoer && [ "$user_os" = "Linux" ]; then
 		command -v $app >/dev/null 2>&1 || { echo >&2 "** Installing $app.."; apt-get install -y $app > /dev/null 2>&1; }
 	done
 	command -v docker >/dev/null 2>&1 || { echo >&2 "** Installing Docker.."; wget -qO- https://get.docker.com/ | sh > /dev/null 2>&1; }
-	
+
 elif $sudoer && [ "$user_os" = "MacOS" ]; then
 	no_apps=false
 	for app in 'wget' 'unzip' 'python' 'lsof'; do
@@ -64,7 +64,7 @@ elif [ "$user_os" = "MacOS" ]; then
 			command -v $app >/dev/null 2>&1 || { echo >&2 "** Installing $app.."; brew install $app; }
 		fi
 	done
-	
+
 else
 	no_apps=false
 	for app in 'wget' 'unzip' 'docker' 'python' 'lsof'; do
@@ -86,7 +86,7 @@ else
 	if [ "$user_os" = "Linux" ]; then
 		BCIL_data_path="/home/$(whoami)/BCIL_pipeline_runs"
 	else
-		BCIL_data_path="/Users/$(whoami)/BCIL_pipeline_runs"	
+		BCIL_data_path="/Users/$(whoami)/BCIL_pipeline_runs"
 	fi
 fi
 BCIL_data_path_input="$BCIL_data_path/input"
@@ -159,7 +159,7 @@ if [ "$default_loc_yn" = "N" ] || [ "$default_loc_yn" = "n" ]; then
 				BCIL_data_path_input_data=$BCIL_data_path_input/CHIPseq
 				if [ -d $BCIL_data_path_input_data ] && (( $(ls $BCIL_data_path_input_data | wc -l) > 0 )); then
 					mv $BCIL_data_path_input_data $BCIL_data_path_input_data_backup_$(date +"%Y-%m-%d_%T")
-				fi 
+				fi
 			elif [ "$pipeline_option" = "3" ]; then
 				chk_input_file_num=$(ls $BCIL_data_path/*.fastq $BCIL_data_path/*.fq 2>/dev/null | wc -l)
 				if [ "$pipeline_option" = "3" ] && [ "$chk_input_file_num" != "4" ]; then
@@ -167,7 +167,7 @@ if [ "$default_loc_yn" = "N" ] || [ "$default_loc_yn" = "n" ]; then
 					file_list=$(ls $BCIL_data_path)
 					continue
 				fi
-				BCIL_data_path_input_data=$BCIL_data_path_input/RNAseq 
+				BCIL_data_path_input_data=$BCIL_data_path_input/RNAseq
 				if [ -d $BCIL_data_path_input_data ] && (( $(ls $BCIL_data_path_input_data | wc -l) > 0 )); then
 					mv $BCIL_data_path_input_data $BCIL_data_path_input_data_backup_$(date +"%Y-%m-%d_%T")
 				fi
@@ -185,8 +185,8 @@ if [ "$default_loc_yn" = "N" ] || [ "$default_loc_yn" = "n" ]; then
 	done
 else
 	if [ ! -d $BCIL_data_path ]; then
-		echo "** Generating data folder ($BCIL_data_path)" 
-		mkdir -p $BCIL_data_path $BCIL_data_path_input $BCIL_data_path_output 
+		echo "** Generating data folder ($BCIL_data_path)"
+		mkdir -p $BCIL_data_path $BCIL_data_path_input $BCIL_data_path_output
 	fi
 fi
 
@@ -332,9 +332,9 @@ if [ "$pipeline_option" = "1" ] || [ "$pipeline_option" = "2" ]; then
 				if [ ! "$input_num_warn_msg" = "Y" ] || [ ! "$input_num_warn_msg" = "y" ]; then
 					continue
 				fi
-			fi				
+			fi
 		fi
-		break	
+		break
 	done
 
 	if [ "$pipeline_option" = "2" ]; then
@@ -407,8 +407,8 @@ if [ "$pipeline_option" = "3" ]; then
 				else
 					allow_to_autorun_pipelines="true"
 					input_in_default_location=true
-					RNAseq_input_path="$BCIL_data_path_input/RNAseq"	
-				fi		
+					RNAseq_input_path="$BCIL_data_path_input/RNAseq"
+				fi
 			else
 				while true; do
 					read -r -p "* Would you like to provide the location of your input data? [Y/N]: " move_to_type_input_path
@@ -426,7 +426,7 @@ if [ "$pipeline_option" = "3" ]; then
 					allow_to_autorun_pipelines="false"
 					break
 				fi
-			fi	
+			fi
 		fi
 		d=$(ls $RNAseq_input_path)
 		input_path_detail=()
@@ -520,20 +520,20 @@ printf "\n----------------------------------------------------------------------
 while true; do
 	printf "* Is your analysis on the human organism? \n   If yes, we have pre-built references that can be used to run the analysis. \n   If not, please provide the location path of the reference genome of your organism of study. \n "
 	read -r -p " Type [Y/N]: " ref_yn
-	if [ "$ref_yn" = "Y" ] || [ "$ref_yn" = "y" ] || [ "$ref_yn" = "N" ] || [ "$ref_yn" = "n" ]; then	
+	if [ "$ref_yn" = "Y" ] || [ "$ref_yn" = "y" ] || [ "$ref_yn" = "N" ] || [ "$ref_yn" = "n" ]; then
 		break
 	fi
 done
 
 #Deprecated pipeline using bowtie 1.
 bowtie_ver="2"
-bowtie_path="$HOME/bowtie"$bowtie_ver	
+bowtie_path="$HOME/bowtie"$bowtie_ver
 
 if [ "$ref_yn" = "Y" ] || [ "$ref_yn" = "y" ]; then
 	while true; do
 		printf "\n* Would you like to download the human reference genome (hg38) and pre-built bowtie indices from our Bundle Resource? "
 		read -r -p "[Y/N]: " use_built_in_ref_yn
-		if [ "$use_built_in_ref_yn" = "Y" ] || [ "$use_built_in_ref_yn" = "y" ] || [ "$use_built_in_ref_yn" = "N" ] || [ "$use_built_in_ref_yn" = "n" ]; then	
+		if [ "$use_built_in_ref_yn" = "Y" ] || [ "$use_built_in_ref_yn" = "y" ] || [ "$use_built_in_ref_yn" = "N" ] || [ "$use_built_in_ref_yn" = "n" ]; then
 			break
 		fi
 	done
@@ -552,7 +552,7 @@ if [ "$use_built_in_ref_yn" = "N" ] || [ "$use_built_in_ref_yn" = "n" ]; then
 	done
 	if [ "$user_indices_yn" = "Y" ] || [ "$user_indices_yn" = "y" ]; then
 		while true; do
-			read -r -p "* Please provide the location path of your pre-built Bowtie2 indices: " ref_path_user	
+			read -r -p "* Please provide the location path of your pre-built Bowtie2 indices: " ref_path_user
 				if [ "$(echo -n $ref_path_user | tail -c 1)" = '/' ]; then
 					ref_path_user=$(echo "${ref_path_user%?}")
 				fi
@@ -568,7 +568,7 @@ if [ "$use_built_in_ref_yn" = "N" ] || [ "$use_built_in_ref_yn" = "n" ]; then
 					continue
 				else
 					break
-				fi 
+				fi
 			fi
 		done
 	else
@@ -577,7 +577,7 @@ if [ "$use_built_in_ref_yn" = "N" ] || [ "$use_built_in_ref_yn" = "n" ]; then
 			printf "* Compiling new indices will take several hours. \n* Do you want to continue? "
 			read -r -p "[Continue(Y) / Abort(N)]: " bowtie_warn
 			printf "\n-------------------------------------------------------------------------------------------\n"
-			if [ "$bowtie_warn" = "Y" ] || [ "$bowtie_warn" = "y" ] || [ "$bowtie_warn" = "N" ] || [ "$bowtie_warn" = "n" ]; then	
+			if [ "$bowtie_warn" = "Y" ] || [ "$bowtie_warn" = "y" ] || [ "$bowtie_warn" = "N" ] || [ "$bowtie_warn" = "n" ]; then
 				break
 			fi
 			echo ""
@@ -586,7 +586,7 @@ if [ "$use_built_in_ref_yn" = "N" ] || [ "$use_built_in_ref_yn" = "n" ]; then
 			if [ "$pipeline_option" = "2" ]; then
 				bowtie_ver="1"
 				echo "* Bowtie1 indices will be generated."
-			else 
+			else
 				bowtie_ver="2"
 				echo "* Bowtie2 indices will be generated."
 			fi
@@ -638,17 +638,17 @@ is_AWS="false"
 if [ "$hn" != "" ]; then
 	IFS='-' read -ra arr <<< "$hn"
 	hn_ip=${arr[0]}
-	for i in 1 2 3 4; do 
+	for i in 1 2 3 4; do
 		if [ "$i" == 4 ]; then
 			IFS='.' read -ra tmp <<< "${arr[$i]}"
 			user_ip+=${tmp[0]}
 		else
 			user_ip+=${arr[$i]}
 		fi
-		
+
 		if [ "$i" != 4 ]; then
 			user_ip+='.'
-		fi 
+		fi
 	done
 	is_AWS="true"
 else
@@ -659,7 +659,7 @@ else
 fi
 if ($sudoer && [ "$user_os" = "Linux" ]) || [ "$user_os" = "MacOS" ]; then
 	while true; do
-		if lsof -Pi :$pipeline_port -sTCP:LISTEN -t > /dev/null ; then 
+		if lsof -Pi :$pipeline_port -sTCP:LISTEN -t > /dev/null ; then
 			pipeline_port=$((pipeline_port+1))
 		else
 			break
@@ -688,7 +688,7 @@ if [ "$allow_to_autorun_pipelines" = "true" ]; then
 					cmd="mv"
 				fi
 				dest=$BCIL_input_data_mount_path"_old_"$DATE
-				if [ -d $BCIL_input_data_mount_path ] && [ ! "$(ls $BCIL_input_data_mount_path)" = "" ]; then 
+				if [ -d $BCIL_input_data_mount_path ] && [ ! "$(ls $BCIL_input_data_mount_path)" = "" ]; then
 					mv $BCIL_input_data_mount_path $dest
 					mkdir -p $BCIL_input_data_mount_path
 				elif [ ! -d $BCIL_input_data_mount_path ]; then
@@ -715,7 +715,7 @@ if [ "$allow_to_autorun_pipelines" = "true" ]; then
 					cmd="mv"
 				fi
 				dest=$BCIL_input_data_mount_path"_old_"$DATE
-				if [ -d $BCIL_input_data_mount_path ] && [ ! "$(ls $BCIL_input_data_mount_path)" = "" ]; then 
+				if [ -d $BCIL_input_data_mount_path ] && [ ! "$(ls $BCIL_input_data_mount_path)" = "" ]; then
 					mv $BCIL_input_data_mount_path $dest
 					mkdir -p $BCIL_input_data_mount_path
 				elif [ ! -d $BCIL_input_data_mount_path ]; then
@@ -750,7 +750,7 @@ else	# user own reference
 	DATE=$(date +%Y-%m-%d_%T)
 	if [ "$user_indices_yn" = "Y" ] || [ "$user_indices_yn" = "y" ]; then
 		echo "** Copying your reference files..."
-		
+
 		if [ "$(echo -n $ref_path_user | tail -c 1)" = '/' ]; then
 			ref_path_user=$(echo "${ref_path_user%?}")
 		fi
@@ -760,8 +760,8 @@ else	# user own reference
 				mv $BCIL_data_path_input/hg38bt1 $dest
 				mkdir -p $BCIL_data_path_input/hg38bt1
 			fi
-			cp -r "$ref_path_user" "$BCIL_data_path_input/hg38bt1"
-			for f in $(ls $BCIL_data_path_input/hg38bt1); do mv $BCIL_data_path_input/hg38bt1/$f $BCIL_data_path_input/hg38bt1/$(echo $f | sed s/"${f/.*}"/hg38/); done
+			$cmd $ref_path_user "$BCIL_data_path_input/hg38bt1"
+			for f in $(ls $BCIL_data_path_input/hg38bt1); do mv $BCIL_data_path_input/hg38bt1/$f $BCIL_data_path_input/hg38bt1/$(echo $f | sed s/"${f/.*}"/hg38/) 2>&1; done
 		elif [ "$bowtie_ver" = "2" ]; then
 			if [ -d "$BCIL_data_path_input/hg38" ] && [ ! "$(ls $BCIL_data_path_input/hg38)" = "" ]; then
 				if [ ! "$ref_path_user" = "$BCIL_data_path_input/hg38" ]; then
@@ -771,8 +771,8 @@ else	# user own reference
 				fi
 			fi
 			if [ ! "$ref_path_user" = "$BCIL_data_path_input/hg38" ]; then
-				cp -r "$ref_path_user" "$BCIL_data_path_input/hg38"
-				for f in $(ls $BCIL_data_path_input/hg38); do mv $BCIL_data_path_input/hg38/$f $BCIL_data_path_input/hg38/$(echo $f | sed s/"${f/.*}"/hg38/); done
+				$cmd $ref_path_user "$BCIL_data_path_input/hg38"
+				for f in $(ls $BCIL_data_path_input/hg38); do mv $BCIL_data_path_input/hg38/$f $BCIL_data_path_input/hg38/$(echo $f | sed s/"${f/.*}"/hg38/) 2>&1; done
 			fi
 		fi
 	elif [ "$user_indices_yn" = "N" ] || [ "$user_indices_yn" = "n" ]; then
@@ -782,7 +782,7 @@ else	# user own reference
 				if [ "$(ls $bowtie_path)" = '' ]; then
 					mkdir -p $bowtie_path
 					wget -N -O $bowtie_path/bowtie-1.1.2-linux-x86_64.zip https://sourceforge.net/projects/bowtie-bio/files/bowtie/1.1.2/bowtie-1.1.2-linux-x86_64.zip/download --progress=bar:force 2>&1 | tail -f -n +6
-					unzip -j $bowtie_path/\*.zip -d $bowtie_path 
+					unzip -j $bowtie_path/\*.zip -d $bowtie_path
 				fi
 			fi
 		elif [ "$bowtie_ver" = "2" ]; then
@@ -792,7 +792,7 @@ else	# user own reference
 					wget -N -O $bowtie_path/bowtie2-2.2.7-linux-x86_64.zip https://sourceforge.net/projects/bowtie-bio/files/bowtie2/2.2.7/bowtie2-2.2.7-linux-x86_64.zip/download --progress=bar:force 2>&1 | tail -f -n +6
 					unzip -j $bowtie_path/\*.zip -d $bowtie_path
 				fi
-			fi 
+			fi
 		fi
 
 		printf "\n**********************************************************************\n** Building Bowtie$bowtie_ver indices..\n** This job will take several hours (depending on system performance).\n**********************************************************************\n"
@@ -863,7 +863,7 @@ if [ "$auto_launch_pipeline" = "Y" ] || [ "$auto_launch_pipeline" = "y" ]; then
 	if $sudoer; then
 		umount "$BCIL_input_data_mount_path" > /dev/null 2>&1
 	fi
-	exit 0 
+	exit 0
 else
 	printf "\n* You are ready to run Bio-Docklets: %s\n" "$pipeline_name"
 	echo "  ------------------------------------------- Warning! Please Do Not Forget.. ----------------------------------------"
