@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 # author: "Baekdoo Kim (baegi7942@gmail.com)"
 
+
+# TODO - mv ref genome in correct path
+
+
 printf "\n\t *****************************************************************************************************************\n\t ** \t Welcome to Bio-Docklets: Virtualization Containers for Single-Step Execution of NGS Data Pipelines.\t**\n\t *****************************************************************************************************************\n\n"
 
 if [ "$(uname)" = "Darwin" ]; then
@@ -8,7 +12,7 @@ if [ "$(uname)" = "Darwin" ]; then
 elif [ "$(expr substr $(uname -s) 1 5)" = "Linux" ]; then
     user_os="Linux"
 else
-	printf "** [ERROR] - This script only supports Linux or MacOS systems.\n\t Please run this script on a Linux or MacOS environment."
+	printf "** [ERROR] - This script only supports Linux and MacOS systems.\n\t Please run this script on a Linux and MacOS environment."
 	exit 1
 fi
 
@@ -92,6 +96,7 @@ fi
 BCIL_data_path_input="$BCIL_data_path/input"
 BCIL_data_path_output="$BCIL_data_path/output"
 input_in_default_location=false
+cmd="cp -r"
 
 printf "*************************************\n* 1. ChIP-Seq - Single-End \n* 2. ChIP-Seq - Paired-End \n* 3. RNA-Seq - Paired-End \n*************************************\n"
 while true; do
@@ -113,13 +118,19 @@ else
 	exit 1
 fi
 
-while true; do
-	printf "** Default database (houses all relevant datasets (inputs, outputs, etc)) path location: '%s' \n   Would you like to set this location as the default database path? " "$BCIL_data_path"
-	read -r -p "[Y/N]: " default_loc_yn
-	if [ "$default_loc_yn" = "Y" ] || [ "$default_loc_yn" = "y" ] || [ "$default_loc_yn" = "N" ] || [ "$default_loc_yn" = "n" ]; then
-		break
-	fi
-done
+default_loc_yn="Y"
+printf "\n* [INFO] - Default database (houses all relevant datasets (inputs, outputs, etc)) path location: '%s' \n\n" "$BCIL_data_path"
+
+###########################################
+#   Disabled custom base path
+###########################################
+# while true; do
+# 	printf "** Default database (houses all relevant datasets (inputs, outputs, etc)) path location: '%s' \n   Would you like to set this location as the default database path? " "$BCIL_data_path"
+# 	read -r -p "[Y/N]: " default_loc_yn
+# 	if [ "$default_loc_yn" = "Y" ] || [ "$default_loc_yn" = "y" ] || [ "$default_loc_yn" = "N" ] || [ "$default_loc_yn" = "n" ]; then
+# 		break
+# 	fi
+# done
 if [ "$default_loc_yn" = "N" ] || [ "$default_loc_yn" = "n" ]; then
 	while true; do
 		read -r -p "** Please provide your input path: " new_database_loc
@@ -513,6 +524,11 @@ if ! $input_in_default_location; then
 				break
 			fi
 		done
+        if [ "$cp_or_mv" = "Y" ] || [ "$cp_or_mv" = "y" ]; then
+            cmd="cp -r"
+        else
+            cmd="mv"
+        fi
 	#fi
 fi
 
@@ -543,7 +559,8 @@ fi
 
 printf "\n-------------------------------------------------------------------------------------------\n"
 if [ "$use_built_in_ref_yn" = "N" ] || [ "$use_built_in_ref_yn" = "n" ]; then
-	printf "\n-- You can compile new bowtie indices of your reference genome or to save time provide the path of your pre-built indices --\n"
+    printf "\n**********************************************************************\n* $pipeline_name is guaranteed to work with 'hg38' reference only for now. \n**********************************************************************\n\n"
+	printf "\n-- You can compile new bowtie2 indices of your reference genome or to save time provide the path of your pre-built indices --\n"
 	while true; do
 		read -r -p "* Do you have pre-built indices of your reference genome? [Y/N]: " user_indices_yn
 		if [ "$user_indices_yn" = "Y" ] || [ "$user_indices_yn" = "y" ] || [ "$user_indices_yn" = "N" ] || [ "$user_indices_yn" = "n" ];then
@@ -682,11 +699,6 @@ if [ "$allow_to_autorun_pipelines" = "true" ]; then
 			if [ ! "$ChIPSeq_input_path" = "$BCIL_input_data_mount_path" ]; then
 				#if $sudoer; then
 				#	cmd="mount -o bind"
-				if [ "$cp_or_mv" = "Y" ] || [ "$cp_or_mv" = "y" ]; then
-					cmd="cp -r -T"
-				else
-					cmd="mv"
-				fi
 				dest=$BCIL_input_data_mount_path"_old_"$DATE
 				if [ -d $BCIL_input_data_mount_path ] && [ ! "$(ls $BCIL_input_data_mount_path)" = "" ]; then
 					mv $BCIL_input_data_mount_path $dest
@@ -710,7 +722,7 @@ if [ "$allow_to_autorun_pipelines" = "true" ]; then
 				#if $sudoer; then
 				#	cmd="mount -o bind"
 				if [ "$cp_or_mv" = "Y" ] || [ "$cp_or_mv" = "y" ]; then
-					cmd="cp -r -T"
+					cmd="cp -r"
 				else
 					cmd="mv"
 				fi
@@ -750,28 +762,35 @@ else	# user own reference
 	DATE=$(date +%Y-%m-%d_%T)
 	if [ "$user_indices_yn" = "Y" ] || [ "$user_indices_yn" = "y" ]; then
 		echo "** Copying your reference files..."
-
+        mkdir -p $BCIL_data_path_input/hg38
 		if [ "$(echo -n $ref_path_user | tail -c 1)" = '/' ]; then
 			ref_path_user=$(echo "${ref_path_user%?}")
 		fi
 		if [ "$bowtie_ver" = "1" ]; then
 			if [ -d "$BCIL_data_path_input/hg38bt1" ]; then
 				dest=$BCIL_data_path_input/hg38bt1"_old_"$DATE
-				mv $BCIL_data_path_input/hg38bt1 $dest
-				mkdir -p $BCIL_data_path_input/hg38bt1
+                mkdir -p $dest
+                mv $BCIL_data_path_input/hg38bt1/* $dest
+				#mkdir -p $BCIL_data_path_input/hg38bt1
 			fi
-			$cmd $ref_path_user "$BCIL_data_path_input/hg38bt1"
-			for f in $(ls $BCIL_data_path_input/hg38bt1); do mv $BCIL_data_path_input/hg38bt1/$f $BCIL_data_path_input/hg38bt1/$(echo $f | sed s/"${f/.*}"/hg38/) 2>&1; done
+            echo "[INFO] - Your reference genome data path: $ref_path_user"
+			for f in $(ls $ref_path_user); do sudo $cmd $ref_path_user/$f $BCIL_data_path_input/hg38bt1/ 2>&1; done
+            if [ "$(ls $BCIL_data_path_input/hg38bt1 | wc -l)" != "0" ] && [ "$(ls $BCIL_data_path_input/hg38bt1 | grep hg38 | wc -l)" = "0" ]; then
+                for f in $(ls $BCIL_data_path_input/hg38bt1); do mv $BCIL_data_path_input/hg38bt1/$f $BCIL_data_path_input/hg38bt1/$(echo $f | sed s/"${f/.*}"/hg38/) 2>&1; done
+            fi
 		elif [ "$bowtie_ver" = "2" ]; then
 			if [ -d "$BCIL_data_path_input/hg38" ] && [ ! "$(ls $BCIL_data_path_input/hg38)" = "" ]; then
 				if [ ! "$ref_path_user" = "$BCIL_data_path_input/hg38" ]; then
 					dest=$BCIL_data_path_input/hg38"_old_"$DATE
-					mv $BCIL_data_path_input/hg38 $dest
-					mkdir -p $BCIL_data_path_input/hg38
+                    mkdir -p $dest
+					mv $BCIL_data_path_input/hg38/* $dest
+					#mkdir -p $BCIL_data_path_input/hg38
 				fi
 			fi
-			if [ ! "$ref_path_user" = "$BCIL_data_path_input/hg38" ]; then
-				$cmd $ref_path_user "$BCIL_data_path_input/hg38"
+            echo "[INFO] - Your reference genome data path: $ref_path_user"
+            for f in $(ls $ref_path_user); do sudo $cmd $ref_path_user/$f $BCIL_data_path_input/hg38/ 2>&1; done
+            if [ "$(ls $BCIL_data_path_input/hg38 | wc -l)" != "0" ] && [ "$(ls $BCIL_data_path_input/hg38 | grep hg38 | wc -l)" = "0" ]; then
+            	#$cmd $ref_path_user "$BCIL_data_path_input/hg38"
 				for f in $(ls $BCIL_data_path_input/hg38); do mv $BCIL_data_path_input/hg38/$f $BCIL_data_path_input/hg38/$(echo $f | sed s/"${f/.*}"/hg38/) 2>&1; done
 			fi
 		fi
