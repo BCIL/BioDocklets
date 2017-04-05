@@ -1,11 +1,7 @@
 #!/usr/bin/env bash
 # author: "Baekdoo Kim (baegi7942@gmail.com)"
 
-
-# TODO - mv ref genome in correct path
-
-
-printf "\n\t *****************************************************************************************************************\n\t ** \t Welcome to Bio-Docklets: Virtualization Containers for Single-Step Execution of NGS Data Pipelines.\t**\n\t *****************************************************************************************************************\n\n"
+printf "\n********************************************************************************\n\t\t\tWelcome to Bio-Docklets\n   Virtualization Containers for Single-Step Execution of NGS Data Pipelines.\n********************************************************************************\n\n"
 
 if [ "$(uname)" = "Darwin" ]; then
     user_os="MacOS"
@@ -108,11 +104,11 @@ done
 printf "*************************************\n\n"
 
 if [ "$pipeline_option" = "1" ]; then
-	pipeline_name="ChIPsequser_latest"
+	pipeline_name="ChIPseq_single"
 elif [ "$pipeline_option" = "2" ]; then
-	pipeline_name="ChIPsequser_paired_latest"
+	pipeline_name="ChIPseq_paired"
 elif [ "$pipeline_option" = "3" ];then
-	pipeline_name="RNAsequser_tophat2_latest"
+	pipeline_name="RNAseq_paired"
 else
 	echo "** ERROR - Something went wrong while trying to retreive the pipeline!! Please rerun this script from the start."
 	exit 1
@@ -201,7 +197,7 @@ else
 	fi
 fi
 
-printf "\n** [INFO] - Working PATH: '%s'\n\n" "$BCIL_data_path"
+printf "\n* [INFO] - Working PATH: '%s'\n\n" "$BCIL_data_path"
 
 if [ "$pipeline_option" = "1" ] || [ "$pipeline_option" = "2" ]; then
 	printf "\t** ChIP-Seq **\n"
@@ -573,6 +569,9 @@ if [ "$use_built_in_ref_yn" = "N" ] || [ "$use_built_in_ref_yn" = "n" ]; then
 				if [ "$(echo -n $ref_path_user | tail -c 1)" = '/' ]; then
 					ref_path_user=$(echo "${ref_path_user%?}")
 				fi
+            if [ "$ref_path_user" = "" ]; then
+                ref_path_user=$BCIL_data_path_input/hg38
+            fi
 			if [ ! -d $ref_path_user ]; then
 				echo "** [ERROR] - Your input path ($ref_path_user) does not exist!"
 				continue
@@ -650,7 +649,51 @@ fi
 hn=$(curl --max-time 1 http://169.254.169.254/latest/meta-data/public-hostname > /dev/null 2>&1)
 #printf "\n*************************************************\n"
 user_ip=""
-pipeline_port=9001
+printf "\n-------------------------------------------------------------------------------------------\n"
+printf "* Please provide a desired port number. It will be used to connect Galaxy on Web-browser.\n"
+printf "* Just hit enter without value will set a port automatically, this works for pipeline. \n"
+printf "* However, the port won't be guaranteed to access Galaxy user interface on Web-browser when your server blocks the port for remote access."
+printf "\n-------------------------------------------------------------------------------------------\n"
+
+while true; do
+    chk_port_int=false
+    read -r -p " Port: " pipeline_port
+    if [ ! $sudoer ]; then
+        printf "[WARN] - You are not a root user. You should provide a port number otherwise set the port as '9877'. \n Do you want to provide a port number?"
+        while true; do
+            read -r -p " [Y/N]:" provide_port_yn
+            if [ "$provide_port_yn" = "Y" ] || [ "$provide_port_yn" = "y" ] || [ "$provide_port_yn" = "N" ] || [ "$provide_port_yn" = "n" ]; then
+    			break
+    		fi
+        done
+        if [ "$provide_port_yn" = "N" ] || [ "$provide_port_yn" = "n" ]; then
+            pipeline_port="9877"
+            chk_port_int=true
+        fi
+    elif [ $sudoer ] && [ "$pipeline_port" = "" ]; then
+    	while true; do
+    		if lsof -Pi :$pipeline_port -sTCP:LISTEN -t > /dev/null ; then
+    			pipeline_port=$((pipeline_port+1))
+    		else
+                chk_port_int=true
+                break
+    		fi
+    	done
+    else
+        if [[ $pipeline_port =~ ^-?[0-9]+$ ]]; then
+            chk_port_int=true
+            break
+        else
+            printf "[ERROR] - Integer only!\n\n"
+            continue
+        fi
+    fi
+    if [ $chk_port_int ]; then
+        break
+    fi
+done
+printf "[INFO] - Port selected: $pipeline_port\n"
+
 is_AWS="false"
 if [ "$hn" != "" ]; then
 	IFS='-' read -ra arr <<< "$hn"
@@ -674,21 +717,8 @@ else
 		user_ip="127.0.0.1"
 	fi
 fi
-if ($sudoer && [ "$user_os" = "Linux" ]) || [ "$user_os" = "MacOS" ]; then
-	while true; do
-		if lsof -Pi :$pipeline_port -sTCP:LISTEN -t > /dev/null ; then
-			pipeline_port=$((pipeline_port+1))
-		else
-			break
-		fi
-	done
-else
-	pipeline_port="9877"
-fi
-printf "** Galaxy server address: %s:%s ** \n\n" "$user_ip" "$pipeline_port"
-
-echo "*******************************************************************************************"
-echo " "
+#printf "** Galaxy server address: %s:%s ** \n" "$user_ip" "$pipeline_port"
+printf "\n*******************************************************************************************\n\n"
 
 if [ "$allow_to_autorun_pipelines" = "true" ]; then
 	DATE=`date +%Y-%m-%d:%H:%M:%S`
@@ -772,11 +802,12 @@ else	# user own reference
 			if [ -d "$BCIL_data_path_input/hg38bt1" ]; then
 				dest=$BCIL_data_path_input/hg38bt1"_old_"$DATE
                 mkdir -p $dest
-                mv $BCIL_data_path_input/hg38bt1/* $dest
+                for f in $(ls "$BCIL_data_path_input/hg38bt1"); do mv $BCIL_data_path_input/hg38bt1/$f $dest 2>&1; done
+                #mv $BCIL_data_path_input/hg38bt1/* $dest
 				#mkdir -p $BCIL_data_path_input/hg38bt1
 			fi
             echo "[INFO] - Your reference genome data path: $ref_path_user"
-			for f in $(ls $ref_path_user); do sudo $cmd $ref_path_user/$f $BCIL_data_path_input/hg38bt1/ 2>&1; done
+			#for f in $(ls $ref_path_user); do sudo $cmd $ref_path_user/$f $BCIL_data_path_input/hg38bt1/ 2>&1; done
             if [ "$(ls $BCIL_data_path_input/hg38bt1 | wc -l)" != "0" ] && [ "$(ls $BCIL_data_path_input/hg38bt1 | grep hg38 | wc -l)" = "0" ]; then
                 for f in $(ls $BCIL_data_path_input/hg38bt1); do mv $BCIL_data_path_input/hg38bt1/$f $BCIL_data_path_input/hg38bt1/$(echo $f | sed s/"${f/.*}"/hg38/) 2>&1; done
             fi
@@ -785,12 +816,13 @@ else	# user own reference
 				if [ ! "$ref_path_user" = "$BCIL_data_path_input/hg38" ]; then
 					dest=$BCIL_data_path_input/hg38"_old_"$DATE
                     mkdir -p $dest
+                    for f in $(ls "$BCIL_data_path_input/hg38"); do mv $BCIL_data_path_input/hg38/$f $dest 2>&1; done
 					mv $BCIL_data_path_input/hg38/* $dest
 					#mkdir -p $BCIL_data_path_input/hg38
 				fi
 			fi
             echo "[INFO] - Your reference genome data path: $ref_path_user"
-            for f in $(ls $ref_path_user); do sudo $cmd $ref_path_user/$f $BCIL_data_path_input/hg38/ 2>&1; done
+            #for f in $(ls $ref_path_user); do sudo $cmd $ref_path_user/$f $BCIL_data_path_input/hg38/ 2>&1; done
             if [ "$(ls $BCIL_data_path_input/hg38 | wc -l)" != "0" ] && [ "$(ls $BCIL_data_path_input/hg38 | grep hg38 | wc -l)" = "0" ]; then
             	#$cmd $ref_path_user "$BCIL_data_path_input/hg38"
 				for f in $(ls $BCIL_data_path_input/hg38); do mv $BCIL_data_path_input/hg38/$f $BCIL_data_path_input/hg38/$(echo $f | sed s/"${f/.*}"/hg38/) 2>&1; done
