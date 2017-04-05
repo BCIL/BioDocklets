@@ -708,7 +708,8 @@ if [ "$allow_to_autorun_pipelines" = "true" ]; then
 				else
 					printf '\n'
 				fi
-				$cmd $ChIPSeq_input_path $BCIL_input_data_mount_path
+                for f in $(ls $RNAseq_input_path); do $cmd $RNAseq_input_path/$f $BCIL_input_data_mount_path 2>&1; done
+				#$cmd $ChIPSeq_input_path $BCIL_input_data_mount_path
 			fi
 		fi
 	elif [ "$pipeline_option" = "3" ]; then
@@ -735,7 +736,8 @@ if [ "$allow_to_autorun_pipelines" = "true" ]; then
 				else
 					printf '\n'
 				fi
-				$cmd $RNAseq_input_path $BCIL_input_data_mount_path
+                for f in $(ls $RNAseq_input_path); do $cmd $RNAseq_input_path/$f $BCIL_input_data_mount_path 2>&1; done
+				#$cmd $RNAseq_input_path $BCIL_input_data_mount_path
 			fi
 		fi
 	fi
