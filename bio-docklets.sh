@@ -89,6 +89,7 @@ else
 		BCIL_data_path="/Users/$(whoami)/BCIL_pipeline_runs"
 	fi
 fi
+
 BCIL_data_path_input="$BCIL_data_path/input"
 BCIL_data_path_output="$BCIL_data_path/output"
 input_in_default_location=false
@@ -314,7 +315,7 @@ if [ "$pipeline_option" = "1" ] || [ "$pipeline_option" = "2" ]; then
 		done
 		if [ "$allow_to_autorun_pipelines" = "true" ]; then
 			if [ "$fastqFile_num" = "0" ]; then
-				printf "== Warning! The provided path (%s) does not contain fastq file(s).\n$pipeline_name pipeline required $pipeline_option FASTQ format file(s) (*.fastq). Below are more detail(s) of the folder path:\n" "$ChIPSeq_input_path"
+				printf "== Warning! The provided path (%s) does not contain any fastq file(s).\n$pipeline_name pipeline required $pipeline_option FASTQ format file(s) (*.fastq). Below are more detail(s) of the folder path:\n" "$ChIPSeq_input_path"
 				echo "-----------------------------------------------------------------------------------------------------------"
 				printf "  "
 				ls "$ChIPSeq_input_path"
@@ -322,7 +323,7 @@ if [ "$pipeline_option" = "1" ] || [ "$pipeline_option" = "2" ]; then
 				printf "\n"
 				continue
 			elif [ "$pipeline_option" = "1" ] && [ "$fastqFile_num" -gt "1" ]; then
-				printf "== Warning! The provided path (%s) contains multiple fastq files. $pipeline_name pipeline requires only ONE fastq file.\n== Please make sure to place only one fastq file inside the folder. Below is more detail(s) of the location of the folder:\n" "$ChIPSeq_input_path"
+				printf "== Warning! The provided path (%s) contains multiple fastq files. $pipeline_name pipeline requires only ONE fastq file.\n== Please make sure to place only one fastq file inside the folder. Below are more detail(s) of the location of the folder:\n" "$ChIPSeq_input_path"
 				echo "-----------------------------------------------------------------------------------------------------------"
 				printf "  "
 				ls "$ChIPSeq_input_path"
@@ -330,7 +331,7 @@ if [ "$pipeline_option" = "1" ] || [ "$pipeline_option" = "2" ]; then
 				printf "\n"
 				continue
 			elif [ "$pipeline_option" = "2" ] && [ "$fastqFile_num" -lt "2" ] || [ "$fastqFile_num" -gt "2" ]; then
-				printf "== Warning! The provided path (%s) contains multiple fastq files. $pipeline_name pipeline requires only TWO fastq files.\n== Please make sure to place only TWO fastq files inside the folder. Below is more detail(s) of the location of the folder: \n" "$ChIPSeq_input_path"
+				printf "== Warning! The provided path (%s) contains multiple fastq files. $pipeline_name pipeline requires only TWO fastq files.\n== Please make sure to place only TWO fastq files inside the folder. Below are more detail(s) of the location of the folder: \n" "$ChIPSeq_input_path"
 				echo "-----------------------------------------------------------------------------------------------------------"
 				printf "  "
 				ls "$ChIPSeq_input_path"
@@ -347,7 +348,7 @@ if [ "$pipeline_option" = "1" ] || [ "$pipeline_option" = "2" ]; then
 	if [ "$pipeline_option" = "2" ]; then
 		printf "\n***** Please provide the values for the following tool parameters of the Bowtie2 and MACS2 tools *****\n"
 		while true; do
-			printf "* Please enter an Insert Size (default: 200)"
+			printf "* Please enter a value for the mater inner distance (default: 200)"
 			read -r -p ": " insert_size
 			if [ "$insert_size" = "" ]; then
 				insert_size=200
@@ -451,7 +452,7 @@ if [ "$pipeline_option" = "3" ]; then
 			fi
 		done
 		if [ "$fastqFile_num" = "0" ]; then
-			printf "== Warning! The provided path (%s) does not contain fastq file(s).\nThe RNA-Seq pipeline requires four FASTQ format file(s) (*.fastq) and one GTF file (*.gtf). Below is more detail(s) of the path:\n" "$RNAseq_input_path"
+			printf "== Warning! The provided path (%s) does not contain fastq file(s).\nThe RNA-Seq pipeline requires four FASTQ format file(s) (*.fastq) and one GTF file (*.gtf). Below are more detail(s) of the path:\n" "$RNAseq_input_path"
 			echo "-----------------------------------------------------------------------------------------------------------"
 			printf "  "
 			ls "$RNAseq_input_path"
@@ -459,7 +460,7 @@ if [ "$pipeline_option" = "3" ]; then
 			printf "\n"
 			continue
 		elif [ "$fastqFile_num" != "4" ]; then
-			printf "== Warning! The number of fastq file(s) does not match the number of expected input file(s).\n\tRNA-Seq pipeline requires FOUR fastq files and ONE gtf file.\n== Please make sure to place the correct number of input data inside the folder. Below is more detail(s) of the path.\n" "$RNAseq_input_path"
+			printf "== Warning! The number of fastq file(s) does not match the number of expected input file(s).\n\tRNA-Seq pipeline requires FOUR fastq files and ONE gtf file.\n== Please make sure to place the correct number of input data inside the folder. Below are more detail(s) of the path.\n" "$RNAseq_input_path"
 			echo "-----------------------------------------------------------------------------------------------------------"
 			printf "  "
 			ls "$RNAseq_input_path"
@@ -483,7 +484,7 @@ if [ "$pipeline_option" = "3" ]; then
 	done
 	printf "\n***** Please provide values for the following tool paramerters of the Tophat2 tool *****\n"
 	while true; do
-		printf "* Please enter a value for the Insert Size (default: 20)"
+		printf "* Please enter a value for the mater inner distance (default: 20)"
 		read -r -p ": " insert_size
 		if [ "$insert_size" = "" ]; then
 			insert_size=20
@@ -540,6 +541,7 @@ done
 #Deprecated pipeline using bowtie 1.
 bowtie_ver="2"
 bowtie_path="$HOME/bowtie"$bowtie_ver
+ref_default_path=false
 
 if [ "$ref_yn" = "Y" ] || [ "$ref_yn" = "y" ]; then
 	while true; do
@@ -571,6 +573,7 @@ if [ "$use_built_in_ref_yn" = "N" ] || [ "$use_built_in_ref_yn" = "n" ]; then
 				fi
             if [ "$ref_path_user" = "" ]; then
                 ref_path_user=$BCIL_data_path_input/hg38
+                ref_default_path=true
             fi
 			if [ ! -d $ref_path_user ]; then
 				echo "** [ERROR] - Your input path ($ref_path_user) does not exist!"
@@ -645,15 +648,16 @@ else
 	auto_launch_pipeline="N"
 fi
 
+#if [ "$auto_launch_pipeline" = "Y" ] || [ "$auto_launch_pipeline" = "y" ]; then
 #printf "\n************ Please ignore this part ************\n"
 hn=$(curl --max-time 1 http://169.254.169.254/latest/meta-data/public-hostname > /dev/null 2>&1)
 #printf "\n*************************************************\n"
 user_ip=""
-printf "\n-------------------------------------------------------------------------------------------\n"
-printf "* Please provide a desired port number. It will be used to connect Galaxy on Web-browser.\n"
-printf "* Just hit enter without value will set a port automatically, this works for pipeline. \n"
-printf "* However, the port won't be guaranteed to access Galaxy user interface on Web-browser when your server blocks the port for remote access."
-printf "\n-------------------------------------------------------------------------------------------\n"
+printf "\n-------------------------------------------------------------------------------------------------------------------------------------------------\n"
+printf "* MUST READ: If you happen to know a preferred port that is available you may provide that as it will be used to connect Galaxy on the web browser.\n"
+printf "* If not, just hit enter without entering any value and the port will set automatically.\n  Due to security constraints, it's not gauranteed that Galaxy will connect to the web browser, yet Bio-Docklets will work hard to connect. \n"
+printf "* CloudLaunch: If you are using Bio-Docklets on CloudLaunch, please enter one of following ports that are available: 8090, 9010.\n  NOTE: If you are using another pipeline on the SAME INSTANCE, one port can be assigned for each pipeline."
+printf "\n-------------------------------------------------------------------------------------------------------------------------------------------------\n"
 
 while true; do
     chk_port_int=false
@@ -693,6 +697,7 @@ while true; do
     fi
 done
 printf "[INFO] - Port selected: $pipeline_port\n"
+#fi
 
 is_AWS="false"
 if [ "$hn" != "" ]; then
@@ -807,7 +812,9 @@ else	# user own reference
 				#mkdir -p $BCIL_data_path_input/hg38bt1
 			fi
             echo "[INFO] - Your reference genome data path: $ref_path_user"
-			#for f in $(ls $ref_path_user); do sudo $cmd $ref_path_user/$f $BCIL_data_path_input/hg38bt1/ 2>&1; done
+            if ! $ref_default_path; then
+                for f in $(ls $ref_path_user); do sudo $cmd $ref_path_user/$f $BCIL_data_path_input/hg38bt1/ 2>&1; done
+            fi
             if [ "$(ls $BCIL_data_path_input/hg38bt1 | wc -l)" != "0" ] && [ "$(ls $BCIL_data_path_input/hg38bt1 | grep hg38 | wc -l)" = "0" ]; then
                 for f in $(ls $BCIL_data_path_input/hg38bt1); do mv $BCIL_data_path_input/hg38bt1/$f $BCIL_data_path_input/hg38bt1/$(echo $f | sed s/"${f/.*}"/hg38/) 2>&1; done
             fi
@@ -817,12 +824,14 @@ else	# user own reference
 					dest=$BCIL_data_path_input/hg38"_old_"$DATE
                     mkdir -p $dest
                     for f in $(ls "$BCIL_data_path_input/hg38"); do mv $BCIL_data_path_input/hg38/$f $dest 2>&1; done
-					mv $BCIL_data_path_input/hg38/* $dest
+					#mv $BCIL_data_path_input/hg38/* $dest
 					#mkdir -p $BCIL_data_path_input/hg38
 				fi
 			fi
             echo "[INFO] - Your reference genome data path: $ref_path_user"
-            #for f in $(ls $ref_path_user); do sudo $cmd $ref_path_user/$f $BCIL_data_path_input/hg38/ 2>&1; done
+            if ! $ref_default_path; then
+                for f in $(ls $ref_path_user); do sudo $cmd $ref_path_user/$f $BCIL_data_path_input/hg38/ 2>&1; done
+            fi
             if [ "$(ls $BCIL_data_path_input/hg38 | wc -l)" != "0" ] && [ "$(ls $BCIL_data_path_input/hg38 | grep hg38 | wc -l)" = "0" ]; then
             	#$cmd $ref_path_user "$BCIL_data_path_input/hg38"
 				for f in $(ls $BCIL_data_path_input/hg38); do mv $BCIL_data_path_input/hg38/$f $BCIL_data_path_input/hg38/$(echo $f | sed s/"${f/.*}"/hg38/) 2>&1; done
@@ -918,12 +927,16 @@ if [ "$auto_launch_pipeline" = "Y" ] || [ "$auto_launch_pipeline" = "y" ]; then
 	fi
 	exit 0
 else
-	printf "\n* You are ready to run Bio-Docklets: %s\n" "$pipeline_name"
+	printf "\n* You are ready to run Bio-Docklets: %s\n\n" "$pipeline_name"
 	echo "  ------------------------------------------- Warning! Please Do Not Forget.. ----------------------------------------"
 	echo "  - Please make sure your input data is placed in $input_data_should_be_in before running the $pipeline_name. "
 	echo "  --------------------------------------------------------------------------------------------------------------------"
-	printf "* Type this command to run the pipeline: 'python %s/launch-pipelines.py %s %s %s'\n" "$BCIL_data_path" "$BCIL_data_path" "$pipeline_name" "$pipeline_port"
-	printf "* Your input data should be placed in: %s\n" "$input_data_should_be_in"
+    if [ "$pipeline_option" = "1" ] || [ "$pipeline_option" = "2" ]; then
+        printf "\n* [INFO] - Type this command to run the pipeline: 'python %s/launch-pipelines.py $BCIL_data_path %s %s %s %s %s'\n" $BCIL_data_path "$pipeline_name" "$pipeline_port" "$insert_size" "$pvalue" "$gsize"
+    else
+        printf "\n* [INFO] - Type this command to run the pipeline: 'python %s/launch-pipelines.py $BCIL_data_path %s %s %s %s %s'\n" $BCIL_data_path "$pipeline_name" "$pipeline_port" "$insert_size" "$anchor_length" "$segment_length"
+    fi
+    printf "* Your input data should be placed in: %s\n" "$input_data_should_be_in"
 	printf "* Done.\n"
 	exit 0
 fi
