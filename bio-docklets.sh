@@ -701,6 +701,7 @@ while true; do
             chk_port_int=true
         fi
     elif [ $sudoer ] && [ "$pipeline_port" = "" ]; then
+		pipeline_port=9001
     	while true; do
     		if lsof -Pi :$pipeline_port -sTCP:LISTEN -t > /dev/null ; then
     			pipeline_port=$((pipeline_port+1))
@@ -970,7 +971,7 @@ else
 	echo "  --------------------------------------------------------------------------------------------------------------------"
     if [ "$pipeline_option" = "1" ] || [ "$pipeline_option" = "2" ]; then
         printf "\n* [INFO] - Type this command to run the pipeline: 'python %s/launch-pipelines.py $BCIL_data_path %s %s %s %s %s'\n" $BCIL_data_path "$pipeline_name" "$pipeline_port" "$insert_size" "$pvalue" "$gsize" "$bwidth"
-    elif [ "$pipeline_option" = "3" ]
+    elif [ "$pipeline_option" = "3" ]; then
         printf "\n* [INFO] - Type this command to run the pipeline: 'python %s/launch-pipelines.py $BCIL_data_path %s %s %s %s %s'\n" $BCIL_data_path "$pipeline_name" "$pipeline_port" "$insert_size" "$anchor_length" "$segment_length"
 	else
 		echo "[ERROR] - The selected pipeline option is not vaild ($pipeline_option)"
