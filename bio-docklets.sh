@@ -344,9 +344,8 @@ if [ "$pipeline_option" = "1" ] || [ "$pipeline_option" = "2" ]; then
 		fi
 		break
 	done
-
 	if [ "$pipeline_option" = "2" ]; then
-		printf "\n***** Please provide the values for the following tool parameters of the Bowtie2 and MACS2 tools *****\n"
+		printf "\n***** Please provide the values for the following tool parameters of the Bowtie2 *****\n"
 		while true; do
 			printf "* Please enter a value for the mater inner distance (default: 200)"
 			read -r -p ": " insert_size
@@ -357,11 +356,11 @@ if [ "$pipeline_option" = "1" ] || [ "$pipeline_option" = "2" ]; then
 			elif [[ $insert_size =~ [0-9]+$ ]]; then break; else continue; fi
 		done
 	else
-		printf "\n***** Please provide the values for the following tool parameters of the MACS2 tools *****\n"
 		insert_size=200
 	fi
+	printf "\n***** Please provide the values for the following tool parameters of the MACS2 tools *****\n"
 	while true; do
-		printf "* Please provide a P-Value cutoff (default: 0.01)"
+		printf "* Please provide a 'P-Value' cutoff (default: 0.01)"
 		read -r -p ": " pvalue
 		if [ "$pvalue" = "" ]; then
 			pvalue=0.01
@@ -370,7 +369,7 @@ if [ "$pipeline_option" = "1" ] || [ "$pipeline_option" = "2" ]; then
 		elif [[ $pvalue < 1 ]]; then break; else continue; fi
 	done
 	while true; do
-		printf "* Please enter the genome size of your organism of study (default: 2700000000)"
+		printf "* Please enter the 'Genome size' of your organism of study (default: 2700000000)"
 		read -r -p ": " gsize
 		if [ "$gsize" = "" ]; then
 			gsize=2700000000
@@ -378,6 +377,16 @@ if [ "$pipeline_option" = "1" ] || [ "$pipeline_option" = "2" ]; then
 			break
 		fi
 		if [[ $gsize =~ [0-9]+$ ]]; then break; else continue; fi
+	done
+	while true; do
+		printf "* Please enter the 'Band width' of your organism of study (default: 300)"
+		read -r -p ": " bwidth
+		if [ "$bwidth" = "" ]; then
+			bwidth=300
+			echo "[INFO] - Set default value ($bwidth)"
+			break
+		fi
+		if [[ $bwidth =~ [0-9]+$ ]]; then break; else continue; fi
 	done
 fi
 
@@ -960,9 +969,12 @@ else
 	echo "  - Please make sure your input data is placed in $input_data_should_be_in before running the $pipeline_name. "
 	echo "  --------------------------------------------------------------------------------------------------------------------"
     if [ "$pipeline_option" = "1" ] || [ "$pipeline_option" = "2" ]; then
-        printf "\n* [INFO] - Type this command to run the pipeline: 'python %s/launch-pipelines.py $BCIL_data_path %s %s %s %s %s'\n" $BCIL_data_path "$pipeline_name" "$pipeline_port" "$insert_size" "$pvalue" "$gsize"
-    else
+        printf "\n* [INFO] - Type this command to run the pipeline: 'python %s/launch-pipelines.py $BCIL_data_path %s %s %s %s %s'\n" $BCIL_data_path "$pipeline_name" "$pipeline_port" "$insert_size" "$pvalue" "$gsize" "$bwidth"
+    elif [ "$pipeline_option" = "3" ]
         printf "\n* [INFO] - Type this command to run the pipeline: 'python %s/launch-pipelines.py $BCIL_data_path %s %s %s %s %s'\n" $BCIL_data_path "$pipeline_name" "$pipeline_port" "$insert_size" "$anchor_length" "$segment_length"
+	else
+		echo "[ERROR] - The selected pipeline option is not vaild ($pipeline_option)"
+		exit 1
     fi
     printf "* Your input data should be placed in: %s\n" "$input_data_should_be_in"
 	printf "* Done.\n"
