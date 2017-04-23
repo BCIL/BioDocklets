@@ -53,7 +53,7 @@ elif [ "$user_os" = "MacOS" ]; then
 				fi
 			done
 			if [ "$install_app" = "Y" ] || [ "$install_app" = "y" ]; then
-				$install_allowed=true
+				install_allowed=true
 				command -v brew >/dev/null 2>&1 || { echo >&2 "** Installing Homebrew.."; /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" > /dev/null 2>&1; }
 			else
 				printf "** [ERROR] - The required application(s) ($app) are not installed, and you agreed NOT to install them.\n   - Aborted.\n\n"
@@ -198,7 +198,7 @@ else
 	fi
 fi
 
-printf "\n* [INFO] - Working PATH: '%s'\n\n" "$BCIL_data_path"
+printf "\n* [INFO] - Working PATH: All datasets (inputs, outputs) will be housed here: '%s'\n\n" "$BCIL_data_path"
 
 if [ "$pipeline_option" = "1" ] || [ "$pipeline_option" = "2" ]; then
 	printf "\t** ChIP-Seq **\n"
@@ -395,7 +395,7 @@ if [ "$pipeline_option" = "3" ]; then
 	input_data_should_be_in="$BCIL_data_path_input/RNAseq"
 	mkdir -p $input_data_should_be_in
 	while true; do
-		printf "* Please provide the location (entire path) of your RNA-Seq paired-end files and annotation file, '*.gtf'.\n  The total number of required input files should be 5. \n  If the input data is already located in '%s' then please hit enter. If not, you will need to copy or move your data inside the following folder path ('%s'). \n" "$BCIL_data_path_input/RNAseq" "$BCIL_data_path_input/RNAseq"
+		printf "* Please provide the location (entire path) of your RNA-Seq paired-end files and annotation file, '*.gtf'.\n  The total number of required input files should be 5. \n"
 		read -r -p "> " RNAseq_input_path
 		if [ "$(echo -n $RNAseq_input_path | tail -c 1)" = '/' ]; then
 			RNAseq_input_path=$(echo "${RNAseq_input_path%?}")
@@ -524,7 +524,7 @@ fi
 if ! $input_in_default_location; then
 	#if ! $sudoer; then
 		while true; do
-			printf "\n== A data directory will be generated to house all the required data (input, outputs etc). Your input data will be relocated there, would you like to copy(SLOW) or move(FAST) your input data from its current location?\n"
+			printf "\n== The database directory will be generated ('/Users/BCIL_pipeline_runs') to house all the required data (input, outputs etc). Your input data must be relocated there, would you like to copy(SLOW) or move(FAST) your input data from its current location?\n"
 			read -r -p "== Please type 'Y'(copy) or 'N'(move): " cp_or_mv
 			if [ "$cp_or_mv" = "Y" ] || [ "$cp_or_mv" = "y" ] || [ "$cp_or_mv" = "N" ] || [ "$cp_or_mv" = "n" ]; then
 				break
@@ -770,7 +770,8 @@ if [ "$allow_to_autorun_pipelines" = "true" ]; then
 				else
 					printf '\n'
 				fi
-                for f in $(ls $RNAseq_input_path); do $cmd $RNAseq_input_path/$f $BCIL_input_data_mount_path 2>&1; done
+                ls $RNAseq_input_path | while read f; do $cmd $RNAseq_input_path/$f $BCIL_input_data_mount_path 2>&1; done
+				#for f in $(ls $RNAseq_input_path); do $cmd $RNAseq_input_path/$f $BCIL_input_data_mount_path 2>&1; done
 				#$cmd $ChIPSeq_input_path $BCIL_input_data_mount_path
 			fi
 		fi
@@ -798,7 +799,8 @@ if [ "$allow_to_autorun_pipelines" = "true" ]; then
 				else
 					printf '\n'
 				fi
-                for f in $(ls $RNAseq_input_path); do $cmd $RNAseq_input_path/$f $BCIL_input_data_mount_path 2>&1; done
+				ls $RNAseq_input_path | while read f; do $cmd $RNAseq_input_path/$f $BCIL_input_data_mount_path 2>&1; done
+                #for f in $(ls $RNAseq_input_path); do $cmd $RNAseq_input_path/$f $BCIL_input_data_mount_path 2>&1; done
 				#$cmd $RNAseq_input_path $BCIL_input_data_mount_path
 			fi
 		fi
