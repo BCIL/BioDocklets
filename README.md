@@ -1,3 +1,6 @@
+
+Please refer to the Supplementary User Manual for more instructions and video tutorials on how to run BioDocklets.
+
 ## Bio-Docklets
 
 ```bash 
