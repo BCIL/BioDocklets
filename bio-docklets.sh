@@ -347,7 +347,7 @@ if [ "$pipeline_option" = "1" ] || [ "$pipeline_option" = "2" ]; then
 	if [ "$pipeline_option" = "2" ]; then
 		printf "\n***** Please provide the values for the following tool parameters of the Bowtie2 *****\n"
 		while true; do
-			printf "* Please enter a value for the mater inner distance (default: 200)"
+			printf "* Please enter a value for the mate inner distance (default: 200)"
 			read -r -p ": " insert_size
 			if [ "$insert_size" = "" ]; then
 				insert_size=200
@@ -493,7 +493,7 @@ if [ "$pipeline_option" = "3" ]; then
 	done
 	printf "\n***** Please provide values for the following tool paramerters of the Tophat2 tool *****\n"
 	while true; do
-		printf "* Please enter a value for the mater inner distance (default: 20)"
+		printf "* Please enter a value for the mate inner distance (default: 20)"
 		read -r -p ": " insert_size
 		if [ "$insert_size" = "" ]; then
 			insert_size=20
