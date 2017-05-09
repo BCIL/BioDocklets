@@ -954,7 +954,7 @@ if [ "$auto_launch_pipeline" = "Y" ] || [ "$auto_launch_pipeline" = "y" ]; then
 	fi
 	if [ "$pipeline_option" = "1" ] || [ "$pipeline_option" = "2" ]; then
 		printf "** Running ChIP-Seq pipeline **\n"
-		python $BCIL_data_path/launch-pipelines.py $BCIL_data_path $pipeline_name $pipeline_port $insert_size $pvalue $gsize
+		python $BCIL_data_path/launch-pipelines.py $BCIL_data_path $pipeline_name $pipeline_port $insert_size $pvalue $gsize $bwidth
 	elif [ "$pipeline_option" = "3" ]; then
 		printf "** Running RNA-Seq pipeline **\n"
 		python $BCIL_data_path/launch-pipelines.py $BCIL_data_path $pipeline_name $pipeline_port $insert_size $anchor_length $segment_length
@@ -972,9 +972,9 @@ else
 	echo "  - Please make sure your input data is placed in $input_data_should_be_in before running the $pipeline_name. "
 	echo "  --------------------------------------------------------------------------------------------------------------------"
     if [ "$pipeline_option" = "1" ] || [ "$pipeline_option" = "2" ]; then
-        printf "\n* [INFO] - Type this command to run the pipeline: 'python %s/launch-pipelines.py $BCIL_data_path %s %s %s %s %s'\n" $BCIL_data_path "$pipeline_name" "$pipeline_port" "$insert_size" "$pvalue" "$gsize" "$bwidth"
+        printf "\n* [INFO] - Type this command to run the pipeline: 'python %s/launch-pipelines.py %s %s %s %s %s %s'\n" $BCIL_data_path "$pipeline_name" "$pipeline_port" "$insert_size" "$pvalue" "$gsize" "$bwidth"
     elif [ "$pipeline_option" = "3" ]; then
-        printf "\n* [INFO] - Type this command to run the pipeline: 'python %s/launch-pipelines.py $BCIL_data_path %s %s %s %s %s'\n" $BCIL_data_path "$pipeline_name" "$pipeline_port" "$insert_size" "$anchor_length" "$segment_length"
+        printf "\n* [INFO] - Type this command to run the pipeline: 'python %s/launch-pipelines.py %s %s %s %s %s'\n" $BCIL_data_path "$pipeline_name" "$pipeline_port" "$insert_size" "$anchor_length" "$segment_length"
 	else
 		echo "[ERROR] - The selected pipeline option is not vaild ($pipeline_option)"
 		exit 1
