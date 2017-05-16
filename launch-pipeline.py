@@ -40,7 +40,7 @@ import os
 
 
 def validate_run():
-	if (len(sys.argv) < 6):
+	if len(sys.argv) < 6:
 		sys.exit("*** Please execute 'bio-docklets.sh' instead of this script. ***")
 
 def get_ip_address(ifname):
