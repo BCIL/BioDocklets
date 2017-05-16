@@ -17,9 +17,9 @@ import os
 ########################################################
 #
 #	Please run 'bio-docklets.sh' instead of this script.
-# 
+#
 #	This script only runs as a bridge script for BioDocklets
-#	
+#
 #
 #######################   ARGVs  #######################
 #
