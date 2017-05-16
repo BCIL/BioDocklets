@@ -78,15 +78,15 @@ fi
 
 if [ "$(whoami)" = "root" ]; then
 	if [ "$user_os" = "Linux" ]; then
-		BCIL_data_path="/home/BCIL_pipeline_runs"
+		BCIL_data_path="/home/BioDocklets"
 	else
-		BCIL_data_path="/Users/BCIL_pipeline_runs"
+		BCIL_data_path="/Users/BioDocklets"
 	fi
 else
 	if [ "$user_os" = "Linux" ]; then
-		BCIL_data_path="/home/$(whoami)/BCIL_pipeline_runs"
+		BCIL_data_path="/home/$(whoami)/BioDocklets"
 	else
-		BCIL_data_path="/Users/$(whoami)/BCIL_pipeline_runs"
+		BCIL_data_path="/Users/$(whoami)/BioDocklets"
 	fi
 fi
 
@@ -524,7 +524,7 @@ fi
 if ! $input_in_default_location; then
 	#if ! $sudoer; then
 		while true; do
-			printf "\n== The database directory will be generated ('/Users/BCIL_pipeline_runs') to house all the required data (input, outputs etc). Your input data must be relocated there, would you like to copy(SLOW) or move(FAST) your input data from its current location?\n"
+			printf "\n== The database directory will be generated ('$BCIL_data_path') to house all the required data (input, outputs etc). Your input data must be relocated there, would you like to copy(SLOW) or move(FAST) your input data from its current location?\n"
 			read -r -p "== Please type 'Y'(copy) or 'N'(move): " cp_or_mv
 			if [ "$cp_or_mv" = "Y" ] || [ "$cp_or_mv" = "y" ] || [ "$cp_or_mv" = "N" ] || [ "$cp_or_mv" = "n" ]; then
 				break
@@ -934,7 +934,7 @@ fi
 
 printf "\n** Downloading launch-pipelines script..\n\n"
 rm $BCIL_data_path/launch-pipelines.py > /dev/null 2>&1
-wget -O $BCIL_data_path/launch-pipelines.py https://www.dropbox.com/s/bykxqu867jy263w/launch-pipeline.py?dl=0 --progress=bar:force 2>&1 | tail -f -n +6 > /dev/null 2>&1
+wget -O $BCIL_data_path/launch-pipelines.py https://raw.githubusercontent.com/BCIL/BioDocklets/master/launch-pipeline.py --progress=bar:force 2>&1 | tail -f -n +6 > /dev/null 2>&1
 
 printf "** Preparing the pipeline... - $repo_pipeline\n"
 docker pull $repo_pipeline
