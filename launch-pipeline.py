@@ -40,8 +40,8 @@ import os
 
 
 def validate_run():
-	if len(sys.argv) < 6:
-		sys.exit("*** Please execute 'bio-docklets.sh' instead of this script. ***")
+    if len(sys.argv) < 6:
+	sys.exit("*** Please execute 'bio-docklets.sh' instead of this script. ***")
 
 def get_ip_address(ifname):
     try:
@@ -439,7 +439,7 @@ def close_container(image_name, mount_path, log_path, total_time, GATK_indelfile
 
 
 if __name__ == '__main__':
-	validate_run()
+    validate_run()
     ip = get_ip_address('eth0')
     image = get_image()
     chk_custom = chk_custom_pipelineName(image)
