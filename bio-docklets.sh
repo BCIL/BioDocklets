@@ -119,7 +119,7 @@ default_loc_yn="Y"
 printf "\n* [INFO] - Default database (houses all relevant datasets (inputs, outputs, etc)) path location: '%s' \n\n" "$BCIL_data_path"
 
 ###########################################
-#   Disabled custom base path
+#   Disabled custom database path
 ###########################################
 # while true; do
 # 	printf "** Default database (houses all relevant datasets (inputs, outputs, etc)) path location: '%s' \n   Would you like to set this location as the default database path? " "$BCIL_data_path"
@@ -128,11 +128,13 @@ printf "\n* [INFO] - Default database (houses all relevant datasets (inputs, out
 # 		break
 # 	fi
 # done
+
+####  
 if [ "$default_loc_yn" = "N" ] || [ "$default_loc_yn" = "n" ]; then
 	while true; do
 		read -r -p "** Please provide your input path: " new_database_loc
 		if [ "$(echo -n $new_database_loc | tail -c 1)" = '/' ]; then
-			new_database_loc=$(echo "${new_database_loc%?}")
+			new_database_loc=$(echo "${new_database_loc}")
 		fi
 		if [ ! -d $new_database_loc ]; then
 			while true; do
@@ -192,9 +194,9 @@ if [ "$default_loc_yn" = "N" ] || [ "$default_loc_yn" = "n" ]; then
 		fi
 	done
 else
-	if [ ! -d $BCIL_data_path ]; then
+	if [ ! -d $BCIL_data_path ] || [ ! -d $BCIL_data_path_input ] || [ ! -d $BCIL_data_path_output ]; then
 		echo "** Generating data folder ($BCIL_data_path)"
-		mkdir -p $BCIL_data_path $BCIL_data_path_input $BCIL_data_path_output
+		mkdir -p $BCIL_data_path $BCIL_data_path_input $BCIL_data_path_output 2>&1
 	fi
 fi
 
@@ -206,14 +208,15 @@ if [ "$pipeline_option" = "1" ] || [ "$pipeline_option" = "2" ]; then
 	mkdir -p $input_data_should_be_in
 	while true; do
 		if [ "$pipeline_option" = "1" ]; then
-			printf "* Please provide the directory path of your ONE Single-End fastq file for the ChIP-Seq pipeline (Single-End). OR\n  Just hit the enter button if your input data is already located in '%s'.\n" "$input_data_should_be_in"
+			required_input_msg="ONE Single-End fastq file for the ChIP-Seq pipeline (Single-End)."
 		elif [ "$pipeline_option" = "2" ]; then
-			printf "* Please provide the directory path of your TWO Paired-End fastq files for ChIP-Seq pipeline (Paired-End). OR\n  Just hit the enter button if your input data already located in '%s'.\n" "$input_data_should_be_in"
+			required_input_msg="TWO Paired-End fastq files for ChIP-Seq pipeline (Paired-End)."
 		fi
+		printf "* Please provide the directory path of %s OR\n  Just hit the enter button if your input data already located in your '%s'.\n" "$required_input_msg" "$input_data_should_be_in"
 		read -r -p "> " ChIPSeq_user_input_path
 
 		if [ "$(echo -n $ChIPSeq_user_input_path | tail -c 1)" = '/' ]; then
-			ChIPSeq_user_input_path=$(echo "${ChIPSeq_user_input_path%?}")
+			ChIPSeq_user_input_path=$(echo "${ChIPSeq_user_input_path}")
 		fi
 		if [ ! "$ChIPSeq_user_input_path" = "" ]; then
 			isEmpty=$(find "$ChIPSeq_user_input_path" -maxdepth 0 -empty -exec echo "true" \;)
@@ -246,7 +249,7 @@ if [ "$pipeline_option" = "1" ] || [ "$pipeline_option" = "2" ]; then
 					fi
 				fi
 			fi
-		else
+		elif [ "$ChIPSeq_user_input_path" = "test" ]; then		###  Deprecated: testing purpose only.
 			while true; do
 				read -r -p "* Your input data ($pipeline_option of fastq file(s)) is already placed in '$BCIL_data_path_input/CHIPseq'? [Y/N]: " input_data_prelocated_yn
 				if [ "$input_data_prelocated_yn" = "Y" ] || [ "$input_data_prelocated_yn" = "y" ] || [ "$input_data_prelocated_yn" = "N" ] || [ "$input_data_prelocated_yn" = "n" ]; then
@@ -301,6 +304,8 @@ if [ "$pipeline_option" = "1" ] || [ "$pipeline_option" = "2" ]; then
 					break
 				fi
 			fi
+		else
+			continue
 		fi
 		d=$(ls $ChIPSeq_input_path)
 		input_path_detail=()
@@ -394,11 +399,12 @@ if [ "$pipeline_option" = "3" ]; then
 	printf "\t** RNA-Seq **\n"
 	input_data_should_be_in="$BCIL_data_path_input/RNAseq"
 	mkdir -p $input_data_should_be_in
+	required_input_msg="RNA-Seq paired-end files and annotation file, '*.gtf'.\n  The total number of required input files should be 5."
 	while true; do
-		printf "* Please provide the location (entire path) of your RNA-Seq paired-end files and annotation file, '*.gtf'.\n  The total number of required input files should be 5. \n"
+		printf "* Please provide the location (entire path) of your %s \n" "$required_input_msg"
 		read -r -p "> " RNAseq_input_path
 		if [ "$(echo -n $RNAseq_input_path | tail -c 1)" = '/' ]; then
-			RNAseq_input_path=$(echo "${RNAseq_input_path%?}")
+			RNAseq_input_path=$(echo "${RNAseq_input_path}")
 		fi
 		if [ ! "$RNAseq_input_path" = "" ]; then
 			allow_to_autorun_pipelines="true"
@@ -410,7 +416,7 @@ if [ "$pipeline_option" = "3" ]; then
 				printf "== Your input folder is empty!\n\n"
 				continue
 			fi
-		else
+		elif [ "$RNAseq_input_path" = "test" ]; then		###  Deprecated: testing purpose only.
 			while true; do
 				read -r -p "* Is your input data already placed in '$BCIL_data_path_input/RNAseq'? [Y/N]: " input_data_prelocated_yn
 				if [ "$input_data_prelocated_yn" = "Y" ] || [ "$input_data_prelocated_yn" = "y" ] || [ "$input_data_prelocated_yn" = "N" ] || [ "$input_data_prelocated_yn" = "n" ]; then
@@ -444,6 +450,8 @@ if [ "$pipeline_option" = "3" ]; then
 					break
 				fi
 			fi
+		else
+			continue	
 		fi
 		d=$(ls $RNAseq_input_path)
 		input_path_detail=()
@@ -578,7 +586,7 @@ if [ "$use_built_in_ref_yn" = "N" ] || [ "$use_built_in_ref_yn" = "n" ]; then
 		while true; do
 			read -r -p "* Please provide the location path of your pre-built Bowtie2 indices: " ref_path_user
 				if [ "$(echo -n $ref_path_user | tail -c 1)" = '/' ]; then
-					ref_path_user=$(echo "${ref_path_user%?}")
+					ref_path_user=$(echo "${ref_path_user}")
 				fi
             if [ "$ref_path_user" = "" ]; then
                 ref_path_user=$BCIL_data_path_input/hg38
@@ -622,7 +630,7 @@ if [ "$use_built_in_ref_yn" = "N" ] || [ "$use_built_in_ref_yn" = "n" ]; then
 				printf "* Please provide the location path of your reference genome (fasta) that includes the file name: \n* e.g. /reference/file/path/genomefilename.fa \n"
 				read -r -p " > " ref_path_user
 				# if [ "$(echo -n $ref_path_user | tail -c 1)" = '/' ]; then
-				# 	ref_path_user=$(echo "${ref_path_user%?}")
+				# 	ref_path_user=$(echo "${ref_path_user}")
 				# fi
 				# if [ ! -d $ref_path_user ]; then
 				# 	echo "** [ERROR] - Your reference genome file does not exist! ($ref_path_user)"
@@ -657,7 +665,7 @@ else
 	auto_launch_pipeline="N"
 fi
 
-if ! $ref_default_path; then
+if [ ! $ref_default_path ] && [ "$use_built_in_ref_yn" = "Y" ] || [ "$use_built_in_ref_yn" = "y" ] ; then
 	#if ! $sudoer; then
 		while true; do
 			printf "\n== Would you like to copy(SLOW) or move(FAST) your reference and bowtie index data from its current location ($ref_path_user) to working path ($BCIL_data_path_input/hg38)?\n"
@@ -835,7 +843,7 @@ else	# user own reference
 		echo "** $cmd_string your reference files. ($ref_path_user -> $BCIL_data_path_input/hg38)"
 
 		if [ "$(echo -n $ref_path_user | tail -c 1)" = '/' ]; then
-			ref_path_user=$(echo "${ref_path_user%?}")
+			ref_path_user=$(echo "${ref_path_user}")
 		fi
 		if [ "$bowtie_ver" = "1" ]; then
 			if [ -d "$BCIL_data_path_input/hg38bt1" ]; then
