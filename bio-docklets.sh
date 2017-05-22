@@ -692,8 +692,10 @@ else
 	auto_launch_pipeline="N"
 fi
 
-if [ ! $ref_default_path ] && [ "$use_built_in_ref_yn" = "N" ] || [ ! $ref_default_path ] && [ "$use_built_in_ref_yn" = "n" ] ; then
-	#if ! $sudoer; then
+ref_cmd="cp -r"
+
+if [[ ( ! $ref_default_path && "$use_built_in_ref_yn" = "N" ) || ( ! $ref_default_path && "$use_built_in_ref_yn" = "n" ) ]] ; then
+	if ! $sudoer; then
 		while true; do
 			printf "\n== Would you like to copy(SLOW) or move(FAST) your reference and bowtie index data from its current location (%s) to working path (%s/hg38)?\n" "$ref_path_user" "$BCIL_data_path_input"
 			read -r -p "== Please type 'Y'(copy) or 'N'(move): " ref_cp_or_mv
@@ -707,7 +709,9 @@ if [ ! $ref_default_path ] && [ "$use_built_in_ref_yn" = "N" ] || [ ! $ref_defau
         else
             ref_cmd="mv"
         fi
-	#fi
+	else
+		ref_cmd="cp -r"
+	fi
 fi
 
 #if [ "$auto_launch_pipeline" = "Y" ] || [ "$auto_launch_pipeline" = "y" ]; then
@@ -893,7 +897,7 @@ else	# user own reference
             echo "[INFO] - Your reference genome data path: $ref_path_user"
             if ! $ref_default_path; then
                 #ref_cmd $ref_path_user/*.* $BCIL_data_path_input/hg38bt1/
-				for f in $(ls $ref_path_user); do sudo $ref_cmd $ref_path_user/$f $BCIL_data_path_input/hg38bt1/ 2>&1; done
+				for f in $(ls $ref_path_user); do $ref_cmd $ref_path_user/$f $BCIL_data_path_input/hg38bt1/ 2>&1; done
             fi
             if [ "$(ls $BCIL_data_path_input/hg38bt1 | wc -l)" != "0" ] && [ "$(ls $BCIL_data_path_input/hg38bt1 | grep -c hg38)" = "0" ]; then
                 for f in $(ls $BCIL_data_path_input/hg38bt1); do mv $BCIL_data_path_input/hg38bt1/$f $BCIL_data_path_input/hg38bt1/$(echo $f | sed s/"${f/.*}"/hg38/) 2>&1; done
@@ -913,7 +917,7 @@ else	# user own reference
             echo "[INFO] - Your reference genome data path: $ref_path_user"
             if ! $ref_default_path; then
                 #ref_cmd $ref_path_user/*.* $BCIL_data_path_input/hg38/
-				for f in $(ls $ref_path_user); do sudo $ref_cmd $ref_path_user/$f $BCIL_data_path_input/hg38/ 2>&1; done
+				for f in $(ls $ref_path_user); do $ref_cmd $ref_path_user/$f $BCIL_data_path_input/hg38/ 2>&1; done
             fi
             if [ "$(ls $BCIL_data_path_input/hg38 | wc -l)" != "0" ] && [ "$(ls $BCIL_data_path_input/hg38 | grep -c hg38)" = "0" ]; then
             	#$ref_cmd $ref_path_user "$BCIL_data_path_input/hg38"
